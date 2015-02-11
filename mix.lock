@@ -1,0 +1,4 @@
+%{"dbg": {:hex, :dbg, "1.0.0"},
+  "ex_spec": {:hex, :ex_spec, "0.3.0"},
+  "reprise": {:hex, :reprise, "0.3.0"},
+  "zipper_tree": {:hex, :zipper_tree, "0.1.1"}}
