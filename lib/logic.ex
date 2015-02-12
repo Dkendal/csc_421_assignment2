@@ -20,29 +20,27 @@ defmodule Logic do
   @operators @binary_operators ++ @unary_operators
 
   @doc """
-  Expands implications `-> A B` to `v ! A B` and
+  Recursively expands implications `-> A B` to `v ! A B` and
   exands implications of form `<-> A B` with `^ -> A B -> B A`
-
   """
+  def expand %Loc{loc: [op, a, b] } = t do
+    # general strategy is to replace the current node with it's substitution
+    # treating it's left and right nodes as indivual subtrees that require their
+    # own expansion. Expanded subtrees are graphed back onto the substituted node
+    case op do
+      "->" ->
+        t |> change ["v", ["!", expand(tree a).loc], expand(tree b).loc]
+      "<->" ->
+        t |> change ["^", expand(tree ["->", a, b]).loc, expand(tree ["->", b, a]).loc]
+    end
+  end
+
+  def expand %Loc{loc: ["!", a]} = t do
+    t |> change ["!", expand(tree a).loc]
+  end
 
   def expand t do
-    case t do
-      %Loc{loc: "->"} ->
-        change(t, "v")
-        |> right
-        |> tap(x ~> change x, ["!", expand(x)])
-        |> right
-        |> tap(x ~> change x, expand(x))
-        |> top
-
-      %Loc{loc: l} when is_binary l ->
-        l
-
-      %Loc{loc: l} when is_list l ->
-        t
-        |> down
-        |> expand
-    end
+    t
   end
 
   @doc """
