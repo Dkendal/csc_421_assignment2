@@ -1,9 +1,20 @@
 defmodule LogicTest do
   use ExSpec
-  describe "#prefix_to_bxt" do
+  describe "#prefix_to_bxt/1" do
     it "should convert from prefix to a binary expression tree" do
-      tree = Logic.prefix_to_bxt String.split "-> v !A B v C D"
-      assert tree == [ "->", ["v", "!A", "B"], ["v", "C", "D"] ]
+      result = Logic.prefix_to_bxt ["->", "v", "!", "A", "B", "v", "C", "D"]
+      expected = ZipperTree.tree [ "->", ["v", ["!", "A"], "B"], ["v", "C", "D"] ]
+      assert expected == result
+    end
+  end
+
+  describe "#expand/1" do
+    context "when input is a binary expression tree" do
+      it "replaces implication with disjunction" do
+        expected = ZipperTree.tree [ "v", ["!", "A"], "B" ]
+        assert expected == Logic.expand ZipperTree.tree ["->", "A", "B"]
+      end
+
     end
   end
   #test "converts implication a simple implication to disjunction" do

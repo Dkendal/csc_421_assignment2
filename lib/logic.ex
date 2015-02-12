@@ -2,6 +2,7 @@ defmodule Logic do
   import ZipperTree
   alias ZipperTree.Loc, as: Loc
   alias ZipperTree.Node, as: Node
+  use PatternTap
 
   @moduledoc """
   provides logic evaluations for a simple logical grammar
@@ -14,31 +15,34 @@ defmodule Logic do
              "^"
   """
 
-  @operators ["->", "<->", "v", "^"]
+  @binary_operators ["->", "<->", "v", "^"]
+  @unary_operators ["!"]
+  @operators @binary_operators ++ @unary_operators
 
   @doc """
   Expands implications `-> A B` to `v ! A B` and
   exands implications of form `<-> A B` with `^ -> A B -> B A`
 
-  Expects a string in prefix notation.
   """
 
-  def clausal ["->", a, b] do
-    [ "v", [ "!", clausal(a) ], clausal(b) ]
-  end
+  def expand t do
+    case t do
+      %Loc{loc: "->"} ->
+        change(t, "v")
+        |> right
+        |> tap(x ~> change x, ["!", expand(x)])
+        |> right
+        |> tap(x ~> change x, expand(x))
+        |> top
 
-  def clausal [op, a, b] do
-    [ op, clausal(a), clausal(b) ]
-  end
+      %Loc{loc: l} when is_binary l ->
+        l
 
-  def clausal(a) do
-    a
-  end
-
-  def expand str do
-    str
-    |> String.split
-    |> prefix_to_bxt( [] )
+      %Loc{loc: l} when is_list l ->
+        t
+        |> down
+        |> expand
+    end
   end
 
   @doc """
@@ -54,13 +58,13 @@ defmodule Logic do
   returns the completed tree
   """
   def prefix_to_bxt r, [] do
-    top(r).loc
+    top(r)
   end
 
   def prefix_to_bxt r, [h|t] do
     cond do
       # move up after completing a subtree
-      length(r.path.left) == 2 ->
+      subtree_complete? r ->
         up(r)
         |> prefix_to_bxt [h|t]
 
@@ -76,6 +80,14 @@ defmodule Logic do
         insert_right(r, h)
         |> right
         |> prefix_to_bxt t
+    end
+  end
+
+  defp subtree_complete? r do
+    case r do
+      %Loc{path: %Node{left: [o]}} -> o in @unary_operators
+      %Loc{path: %Node{left: [_, o]}} -> o in @binary_operators
+      _ -> false
     end
   end
 end

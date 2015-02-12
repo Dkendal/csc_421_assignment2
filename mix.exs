@@ -26,7 +26,8 @@ defmodule Logic.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:zipper_tree, "~> 0.1.1"},
+      {:pattern_tap, "~> 0.2.1"},
+      {:zipper_tree, github: "Dkendal/zipper_tree"},
       {:reprise, "~> 0.3.0"},
       {:dbg, "~> 1.0.0"},
       {:ex_spec, "~> 0.3.0", only: :test}

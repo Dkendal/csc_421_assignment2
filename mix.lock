@@ -1,4 +1,5 @@
 %{"dbg": {:hex, :dbg, "1.0.0"},
   "ex_spec": {:hex, :ex_spec, "0.3.0"},
+  "pattern_tap": {:hex, :pattern_tap, "0.2.1"},
   "reprise": {:hex, :reprise, "0.3.0"},
-  "zipper_tree": {:hex, :zipper_tree, "0.1.1"}}
+  "zipper_tree": {:git, "git://github.com/Dkendal/zipper_tree.git", "1dc6dcab78a0d2d0775a88ac2c5bdaaab81b8c23", []}}
