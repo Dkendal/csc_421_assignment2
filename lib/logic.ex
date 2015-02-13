@@ -23,24 +23,69 @@ defmodule Logic do
   Recursively expands implications `-> A B` to `v ! A B` and
   exands implications of form `<-> A B` with `^ -> A B -> B A`
   """
-  def expand %Loc{loc: [op, a, b] } = t do
+  def expand [op, a, b] = t do
     # general strategy is to replace the current node with it's substitution
     # treating it's left and right nodes as indivual subtrees that require their
     # own expansion. Expanded subtrees are graphed back onto the substituted node
     case op do
       "->" ->
-        t |> change ["v", ["!", expand(tree a).loc], expand(tree b).loc]
+        ["v", expand(["!", a]), expand(b)]
       "<->" ->
-        t |> change ["^", expand(tree ["->", a, b]).loc, expand(tree ["->", b, a]).loc]
+        ["^", expand(["->", a, b]), expand(["->", b, a])]
+      _ ->
+        t
     end
   end
 
-  def expand %Loc{loc: ["!", a]} = t do
-    t |> change ["!", expand(tree a).loc]
+  def expand ["!", ["!", a]] do
+    expand(a)
+  end
+
+  def expand ["!", a] do
+    ["!", expand(a)]
   end
 
   def expand t do
     t
+  end
+
+  @doc """
+  takes the binding list of varables and applies it to the formula, returns
+  true if the binding is valid, false otherwise
+  """
+  def eval(f, binding) when is_list f do
+    case f do
+      [op, a] when is_function op ->
+        op.(a)
+
+      [op, a, b] when is_function op ->
+        op.(a,b)
+
+      ["!"] ->
+        &Kernel.not/1
+
+      ["^"] ->
+        &Kernel.and/2
+
+      ["v"] ->
+        &Kernel.or/2
+
+      [a] ->
+        binding[String.to_atom a]
+
+      _ when is_list f ->
+        Enum.map(f, &eval(&1, binding))
+        |> eval binding
+    end
+  end
+
+  def eval(f, t) when is_binary f do
+    f
+    |> String.split
+    |> prefix_to_bxt
+    |> tap(f ~> f.loc)
+    |> expand
+    |> eval t
   end
 
   @doc """
