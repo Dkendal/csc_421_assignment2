@@ -26,16 +26,4 @@ defmodule LogicTest do
         expand Z.tree(["<->", "A", "B"])
     end
   end
-  #test "converts implication a simple implication to disjunction" do
-  #  # !A v B = A -> B
-  #  assert "v!AB" == expand "-> A B"
-  #end
-
-  #test "converts when there's an op on first arg" do
-  #  assert "v!BvAC" == expand "-> B v A C"
-  #end
-
-  #test "converts when there's an op on the second arg" do
-  #  assert "v!vACB" == expand "-> v A C B"
-  #end
 end
