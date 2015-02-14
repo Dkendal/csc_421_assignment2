@@ -23,17 +23,17 @@ defmodule Logic do
   Recursively expands implications `-> A B` to `v ! A B` and
   exands implications of form `<-> A B` with `^ -> A B -> B A`
   """
-  def expand [op, a, b] = t do
+  def expand [op, a, b] do
     # general strategy is to replace the current node with it's substitution
     # treating it's left and right nodes as indivual subtrees that require their
     # own expansion. Expanded subtrees are graphed back onto the substituted node
     case op do
       "->" ->
-        ["v", expand(["!", a]), expand(b)]
+        ["v", ["!", a], b] |> expand
       "<->" ->
-        ["^", expand(["->", a, b]), expand(["->", b, a])]
+        ["^", ["->", a, b], ["->", b, a]] |> expand
       _ ->
-        t
+        [op, expand(a), expand(b)]
     end
   end
 
