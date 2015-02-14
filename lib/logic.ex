@@ -134,56 +134,6 @@ defmodule Logic do
     end
   end
 
-  #defp pop l, r \\ [] do
-  #  Enum.slice l, 0, Enum.find_index(l, &("(" == &1)) || 1
-  #end
-  defp pop l, r \\ [] do
-    case l do
-      [] ->
-        { r, [] }
-
-      ["(" | t] ->
-        { r, ["("|t] }
-
-      [h|t] ->
-
-        pop(t, r ++ [h])
-    end
-  end
-
-
-  #While there are tokens to be read:
-  #    Read a token.
-  #    If the token is a number, then add it to the output queue.
-  #    If the token is a function token, then push it onto the stack.
-  #    If the token is a function argument separator (e.g., a comma):
-
-  #        Until the token at the top of the stack is a left parenthesis, pop operators off the stack onto the output queue. If no left parentheses are encountered, either the separator was misplaced or parentheses were mismatched.
-
-  #    If the token is an operator, o1, then:
-
-  #        while there is an operator token, o2, at the top of the stack, and either
-
-  #            o1 is left-associative and its precedence is less than or equal to that of o2, or
-  #            o1 if right associative, and has precedence less than that of o2,
-
-  #        then pop o2 off the stack, onto the output queue;
-
-  #        push o1 onto the stack.
-
-  #    If the token is a left parenthesis, then push it onto the stack.
-  #    If the token is a right parenthesis:
-
-  #        Until the token at the top of the stack is a left parenthesis, pop operators off the stack onto the output queue.
-  #        Pop the left parenthesis from the stack, but not onto the output queue.
-  #        If the token at the top of the stack is a function token, pop it onto the output queue.
-  #        If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
-
-  #When there are no more tokens to read:
-  #    While there are still operator tokens in the stack:
-  #        If the operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
-  #        Pop the operator onto the output queue.
-  #Exit.
   def infix_to_prefix [], [], output do
     Enum.join output, " "
   end
@@ -192,32 +142,30 @@ defmodule Logic do
     infix_to_prefix [], ops, [o|output]
   end
 
-  def infix_to_prefix [t|t1] = tokens, ops, output do
-    cond do
-      t == "(" ->
-        infix_to_prefix t1, [t|ops], output
+  def infix_to_prefix ["("|tokens], ops, output do
+    infix_to_prefix tokens, ["("|ops], output
+  end
 
-      t == ")" ->
-        case ops do
-          [o|o1] when o in @operators ->
-            infix_to_prefix tokens, o1, [o|output]
-
-          ["("|o1] ->
-            infix_to_prefix t1, o1, output
-        end
-
-      t in @operators ->
-        case ops do
-          [o|o1] when o in @operators ->
-            infix_to_prefix tokens, o1, [o|output]
-
-          _ ->
-            infix_to_prefix t1, [t|ops], output
-        end
-
-      true ->
-        infix_to_prefix t1, ops, [t|output]
+  def infix_to_prefix [")"|t1] = tokens, [o|ops], output do
+    case o do
+      "(" ->
+        infix_to_prefix t1, ops, output
+      _ ->
+        infix_to_prefix tokens, ops, [o|output]
     end
+  end
+
+  def infix_to_prefix([t|t1] = tokens, ops, output) when t in @operators do
+    case ops do
+      [o|o1] when o in @operators ->
+        infix_to_prefix tokens, o1, [o|output]
+      _ ->
+        infix_to_prefix t1, [t|ops], output
+    end
+  end
+
+  def infix_to_prefix [t|t1], ops, output do
+    infix_to_prefix t1, ops, [t|output]
   end
 
   def infix_to_prefix(f) when is_binary f do
