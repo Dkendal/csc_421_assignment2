@@ -3,6 +3,24 @@ defmodule LogicTest do
   import Logic
   alias ZipperTree, as: Z
 
+  describe "infix_to_prefix/2"  do
+    it "should handle binary operators properly" do
+      assert "-> B A" == infix_to_prefix "A -> B"
+      assert "v B A" == infix_to_prefix "A v B"
+      assert "^ B A" == infix_to_prefix "A ^ B"
+      assert "<-> B A" == infix_to_prefix "A <-> B"
+    end
+
+    it "should handle unary operators properly" do
+      assert "! A" == infix_to_prefix "! A"
+      assert "-> B ! A" == infix_to_prefix "! A -> B"
+    end
+
+    it "should handle parens" do
+      assert "-> v C B A" == infix_to_prefix "A -> ( B v C )"
+    end
+  end
+
   describe "prefix_to_bxt/1" do
     it "should convert from prefix to a binary expression tree" do
       result = prefix_to_bxt ["->", "v", "!", "A", "B", "v", "C", "D"]
