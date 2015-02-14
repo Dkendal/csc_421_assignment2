@@ -133,42 +133,4 @@ defmodule Logic do
       _ -> false
     end
   end
-
-  def infix_to_prefix [], [], output do
-    Enum.join output, " "
-  end
-
-  def infix_to_prefix [], [o|ops], output do
-    infix_to_prefix [], ops, [o|output]
-  end
-
-  def infix_to_prefix ["("|tokens], ops, output do
-    infix_to_prefix tokens, ["("|ops], output
-  end
-
-  def infix_to_prefix [")"|t1] = tokens, [o|ops], output do
-    case o do
-      "(" ->
-        infix_to_prefix t1, ops, output
-      _ ->
-        infix_to_prefix tokens, ops, [o|output]
-    end
-  end
-
-  def infix_to_prefix([t|t1] = tokens, ops, output) when t in @operators do
-    case ops do
-      [o|o1] when o in @operators ->
-        infix_to_prefix tokens, o1, [o|output]
-      _ ->
-        infix_to_prefix t1, [t|ops], output
-    end
-  end
-
-  def infix_to_prefix [t|t1], ops, output do
-    infix_to_prefix t1, ops, [t|output]
-  end
-
-  def infix_to_prefix(f) when is_binary f do
-    f |> String.split |> infix_to_prefix [], []
-  end
 end
